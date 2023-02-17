@@ -79,7 +79,7 @@ const httpRequestListener = (request, response) => {
         response.writeHead(201, { "Content-Type": "application/json" });
         response.end(JSON.stringify({ message: "userCreated" }));
       });
-    } else if (request.url == "/post") {
+    } else if (request.url === "/post") {
       let body = "";
 
       request.on("data", (data) => {
@@ -98,6 +98,28 @@ const httpRequestListener = (request, response) => {
 
         response.writeHead(201, { "Content-Type": "application/json" });
         response.end(JSON.stringify({ message: "postCreated" }));
+      });
+    }
+  } else if (request.method === "PATCH") {
+    if (request.url === "/post") {
+      let body = "";
+
+      request.on("data", (data) => {
+        body += data;
+      });
+
+      request.on("end", () => {
+        const update = JSON.parse(body);
+        const id = parseInt(update.id) - 1;
+
+        const post = posts[id];
+        post.title = update.title;
+        post.content = update.content;
+
+        const data = getAggregatedData(users, posts);
+
+        response.writeHead(200, { "Content-Type": "application/json" });
+        response.end(JSON.stringify({ data: data[id] }));
       });
     }
   }
