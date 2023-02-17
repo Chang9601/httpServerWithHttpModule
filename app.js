@@ -28,12 +28,38 @@ const posts = [
   },
 ];
 
+const getAggregatedData = (users, posts) => {
+  const aggregatedData = [];
+
+  posts.forEach((post) => {
+    users.forEach((user) => {
+      if (post.userId === user.id) {
+        aggregatedData.push({
+          userID: user.id,
+          userName: user.name,
+          postingId: post.id,
+          postingTitle: post.title,
+          postingContent: post.content,
+        });
+      }
+    });
+  });
+
+  return aggregatedData;
+};
+
 const http = require("http");
 const server = http.createServer();
 
 const httpRequestListener = (request, response) => {
-  if (request.method === "POST") {
-    if (request.url === "/users") {
+  if (request.method === "GET") {
+    if (request.url === "/posts") {
+      const data = getAggregatedData(users, posts);
+      response.writeHead(200, { "Content-Type": "application/json" });
+      response.end(JSON.stringify({ data: data }));
+    }
+  } else if (request.method === "POST") {
+    if (request.url === "/user") {
       let body = "";
 
       request.on("data", (data) => {
@@ -44,7 +70,7 @@ const httpRequestListener = (request, response) => {
         const user = JSON.parse(body);
 
         users.push({
-          id: user.id,
+          id: parseInt(user.id),
           name: user.name,
           email: user.email,
           password: user.password,
@@ -53,7 +79,7 @@ const httpRequestListener = (request, response) => {
         response.writeHead(201, { "Content-Type": "application/json" });
         response.end(JSON.stringify({ message: "userCreated" }));
       });
-    } else if (request.url == "/posts") {
+    } else if (request.url == "/post") {
       let body = "";
 
       request.on("data", (data) => {
@@ -64,10 +90,10 @@ const httpRequestListener = (request, response) => {
         const post = JSON.parse(body);
 
         posts.push({
-          id: post.id,
+          id: parseInt(post.id),
           title: post.title,
           content: post.content,
-          userId: post.userId,
+          userId: parseInt(post.userId),
         });
 
         response.writeHead(201, { "Content-Type": "application/json" });
