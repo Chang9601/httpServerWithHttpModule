@@ -122,6 +122,24 @@ const httpRequestListener = (request, response) => {
         response.end(JSON.stringify({ data: data[id] }));
       });
     }
+  } else if (request.method === "DELETE") {
+    if (request.url === "/post") {
+      let body = "";
+
+      request.on("data", (data) => {
+        body += data;
+      });
+
+      request.on("end", () => {
+        let id = JSON.parse(body);
+        id = parseInt(id.id) - 1;
+
+        posts.splice(id, 1);
+
+        response.writeHead(200, { "Content-Type": "application/json" });
+        response.end(JSON.stringify({ data: posts }));
+      });
+    }
   }
 };
 
